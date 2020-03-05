@@ -2,15 +2,16 @@ import sys
 sys.path.insert(0, '..')
 from inputparams import writeInput
 
-dfile="1resclass"
+dfile="DoublePuits-g0d25-e0d1"
 
 params={}
 
-params['tmax']=10000
+# ~ params['tmax']=10000
+params['tmax']=5000
 
-params['gamma']=0.40
-params['epsilon']=0.15
-params['phi']=0.25
+params['gamma']=0.25
+params['epsilon']=1
+params['phi']=0.00
 
 writeInput("inputs/"+dfile+".txt",params)
 

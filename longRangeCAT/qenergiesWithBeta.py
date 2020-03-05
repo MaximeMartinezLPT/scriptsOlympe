@@ -4,8 +4,8 @@ sys.path.insert(0, '..')
 sys.path.insert(0, '../..')
 
 from inputparams import *
-from dynamics1D import potential
-from dynamics1D.quantum.continuous import *
+from dynamics1D.potential import *
+from dynamics1D.quantum import *
 
 mode=sys.argv[1]
 wdir=sys.argv[2]
@@ -34,11 +34,9 @@ if mode=="compute":
 	beta0=np.linspace(0,1,nruns,endpoint=False)
 	beta0=np.sort(beta0*(beta0<=0.5)+(beta0-1)*(beta0>0.5))
 	beta=beta0[runid]
-	
-	
 
 	grid=Grid(Npcell,h)
-	pot=potential.ModulatedPendulum(e,gamma,phi=phi)
+	pot=ModulatedPendulum(e,gamma,phi=phi)
 	floquet=FloquetPropagator(grid,pot,beta=beta,T0=4*np.pi,idtmax=1000)
 
 	wf=WaveFunction(grid)
@@ -91,7 +89,7 @@ if mode=="gather":
 
 	np.savez(wdir+"data","w", quasienergies=quasienergies, overlaps=overlaps,beta=beta,wannierx=wannier.x,gridx=grid.x)	
 	
-	# ~ print(nruns)
+	os.system("rm -r "+wdir+"dataruns/")
 	
 if mode=="plot":
 	

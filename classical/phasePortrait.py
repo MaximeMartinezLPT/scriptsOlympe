@@ -4,7 +4,7 @@ sys.path.insert(0, '..')
 sys.path.insert(0, '../..')
 
 from inputparams import *
-from dynamics1D import potential
+from dynamics1D.potential import *
 from dynamics1D.classical import *
 
 mode=sys.argv[1]
@@ -26,15 +26,14 @@ if mode=="compute":
 	params=readInput(wdir+"params.txt")
 	gamma=float(params['gamma'])
 	e=float(params['epsilon'])
-	phi=float(params['phi'])
 	tmax=int(params['tmax'])
 	nruns=int(params['nruns'])
 	
-
-	pot=potential.ModulatedPendulum(e,gamma,phi=phi)
+	icg=InitialConditionGenerator(nruns)
+	pot=DoubleWell(e,gamma)
 	
-	tp=ContinuousTimePropagator(pot,T0=2*np.pi,ndt=100) #Propagateur entre deux points du portrait de phase
-	pp=PhasePortrait(tmax,nruns,tp,dP=4.0)
+	tp=ContinuousTimePropagator(pot,T0=0.01,ndt=10) #Propagateur entre deux points du portrait de phase
+	pp=PhasePortrait(tmax,nruns,tp,icg.generateXP)
 	x,p=pp.computeOrbit(runid)
 	c=pp.getChaoticity(x,p)
 
@@ -57,9 +56,10 @@ if mode=="gather":
 		data.close()
 		
 	np.savez(wdir+"data","w", x=x, p=p,c=c/np.max(c))
+	os.system("rm -r "+wdir+"dataruns/")
 
 	
-if mode=="plot":
+if mode=="plothusimi":
 	# Loading inpute file
 	fig, ax = plt.subplots(figsize=(np.pi*2,4),frameon=False)
 	ax.set_xlim(-np.pi,np.pi)
@@ -67,6 +67,27 @@ if mode=="plot":
 	ax.set_xticks([])
 	ax.set_yticks([])
 	
+	data=np.load(wdir+"data.npz")
+	x=data["x"]
+	p=data["p"]
+	c=data["c"]
+	data.close()
+	
+	
+	plt.scatter(x,p,s=0.1**2,c="black")
+	
+	fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+	plt.savefig(wdir+"PP-husimi.png",dpi=500)
+	
+if mode=="plot":
+	# Loading inpute file
+	fig, ax = plt.subplots(figsize=(np.pi*2,4))
+	
+	ax.set_xlim(-np.pi,np.pi)
+
+	
+	ax.set_xlabel(r"Position")
+	ax.set_ylabel(r"Vitesse")
 
 	data=np.load(wdir+"data.npz")
 	x=data["x"]
@@ -76,13 +97,10 @@ if mode=="plot":
 	
 	condreg=c<0.5	
 	condchaotic=c>0.5
-	# ~ plt.scatter(x[condreg],p[condreg],s=0.02**2,c="blue")
-	# ~ plt.scatter(x[condchaotic],p[condchaotic],s=0.02**2,c="red")
+	plt.scatter(x,p,s=0.1**2,c="black")
 	
-	plt.scatter(x,p,s=0.02**2,c="black")
 	
-	fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-	plt.savefig(wdir+"phase-portrait.png",dpi=500)
+	plt.savefig(wdir+"PP.png",dpi=500)
 	
 
 	
